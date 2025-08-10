@@ -1,11 +1,13 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading;
+﻿using ClosedXML.Excel;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Chrome;
 using OpenQA.Selenium.Interactions;
-using ClosedXML.Excel;
+using OpenQA.Selenium.Support.UI;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading;
+using SeleniumExtras.WaitHelpers;
 
 class Program
 {
@@ -33,16 +35,16 @@ class Program
                 string creatorName = row.CreatorName;
                 string message = row.Message;
                 string startDate = row.StartDate;
-                string startTime = row.StartTime;
+                string startTime = row.StartTime.ToString();
                 string endDate = row.EndDate;
-                string endTime = row.EndTime;
+                string endTime = row.EndTime.ToString();
 
                 // Actions sequence
                 Click(By.CssSelector(".profile-image"));
                 Click(By.LinkText("Ga naar agency"));
 
                 // Click creator name dynamically from Excel
-                Click(By.XPath($"//td[contains(text(), '{creatorName}')]"));
+                Click(By.CssSelector($"{creatorName}"));
 
                 // Select folder
                 Click(By.CssSelector("div:nth-child(1) > .OsMxUq_folder > .u9X6NG_unstyledLink > .OsMxUq_folderImage"));
@@ -92,16 +94,17 @@ class Program
 
     static void Click(By by)
     {
-        driver.FindElement(by).Click();
-        Thread.Sleep(2000); // delay
+        var wait = new WebDriverWait(driver, TimeSpan.FromSeconds(15));
+        var element = wait.Until(ExpectedConditions.ElementToBeClickable(by));
+        element.Click();
     }
 
     static void Type(By by, string text)
     {
-        var element = driver.FindElement(by);
+        var wait = new WebDriverWait(driver, TimeSpan.FromSeconds(15));
+        var element = wait.Until(ExpectedConditions.ElementIsVisible(by));
         element.Clear();
         element.SendKeys(text);
-        Thread.Sleep(2000); // delay
     }
 
     static void SelectDate(string day)
